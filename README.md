@@ -9,7 +9,7 @@ I can't find a dataset of CS theory papers, but I can make a dataset of those pa
 
 The todo is expected to get more sub-tasks as the project continues.
 
-- [ ] Get dataset of paper abstracts in CS theory
+- [x] Get dataset of paper abstracts in CS theory
 - [ ] Select a model architecture to use
 - [ ] Implement the model
 - [ ] Fine-tune the model
