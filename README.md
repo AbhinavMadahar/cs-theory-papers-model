@@ -5,6 +5,10 @@
 This is a machine learning model which generates paper abstracts in the theory subfield of computer science.
 I can't find a dataset of CS theory papers, but I can make a dataset of those papers' abstracts.
 
+## How to use this model
+
+First, use the `data/download.sh` script to download abstracts, and save the output to a text file.
+
 ## Todo
 
 The todo is expected to get more sub-tasks as the project continues.
