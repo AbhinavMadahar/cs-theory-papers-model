@@ -6,7 +6,7 @@ EOS_token = 1
 
 
 class Vocabulary:
-    def __init__(self, name):
+    def __init__(self):
         self.word2index = {}
         self.word2count = {}
         self.index2word = {0: "SOS", 1: "EOS"}
