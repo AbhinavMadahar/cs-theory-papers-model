@@ -27,7 +27,7 @@ class Encoder(nn.Module):
         output, hidden = self.gru(output, hidden)
         return output, hidden
     
-    def initHidden(self) -> torch.Tensor:
+    def init_hidden(self) -> torch.Tensor:
         return torch.zeros(1, 1, self.hidden_size, device=self.device)
 
 
@@ -49,5 +49,5 @@ class Decoder(nn.Module):
         output = self.softmax(output)
         return output, hidden
     
-    def initHidden(self):
+    def init_hidden(self):
         return torch.zeros(1, 1, self.hidden_size, self.device)
