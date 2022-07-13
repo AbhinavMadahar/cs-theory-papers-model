@@ -1,3 +1,4 @@
+import itertools
 import math
 import random
 import torch
@@ -11,7 +12,6 @@ from numbers import Number
 from util.plot import show_plot
 
 
-MAX_LENGTH = 500
 teacher_forcing_ratio = 0.5
 
 def train_one_iteration(
@@ -20,7 +20,7 @@ def train_one_iteration(
         encoder_optimizer, decoder_optimizer,
         criterion,
         device: torch.device,
-        max_length=MAX_LENGTH) -> float:
+        max_length: int) -> float:
     encoder_hidden = encoder.init_hidden()
 
     encoder_optimizer.zero_grad()
@@ -82,6 +82,7 @@ def time_since(since, percent) -> str:
 def train(encoder: Encoder, decoder: Decoder,
           sequences: Iterable[torch.Tensor],
           device: torch.device,
+          max_length: int,
           print_every=1000, plot_every=100,
           learning_rate=0.01,
           iterations=100) -> None:
@@ -95,8 +96,8 @@ def train(encoder: Encoder, decoder: Decoder,
 
     criterion = nn.NLLLoss()
 
-    for iteration, sequence in enumerate(sequences, start=1):
-        loss = train_one_iteration(encoder, decoder, sequence, encoder_optimizer, decoder_optimizer, criterion, device)
+    for iteration, sequence in enumerate(itertools.islice(sequences, iterations), start=1):
+        loss = train_one_iteration(encoder, decoder, sequence, encoder_optimizer, decoder_optimizer, criterion, device, max_length)
         print_loss_total += loss
         plot_loss_total += loss
 
