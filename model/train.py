@@ -12,7 +12,7 @@ from util.plot import show_plot
 
 
 MAX_LENGTH = 500
-teacher_forcing_ratio = 1
+teacher_forcing_ratio = 0.5
 
 def train_one_iteration(
         encoder: Encoder, decoder: Decoder,
