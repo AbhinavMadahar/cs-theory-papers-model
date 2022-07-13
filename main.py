@@ -1,8 +1,15 @@
+import torch
+
+from torch import tensor
 from model.model import Encoder, Decoder
 from model.train import train
-from model.vocabulary import Vocabulary
+from model.vocabulary import Vocabulary, tensor_from_sentence
+
+hidden_size = 128
 
 abstracts_file_name = 'data/abstracts.txt'
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if __name__ == '__main__':
     vocabulary = Vocabulary()
@@ -26,3 +33,10 @@ if __name__ == '__main__':
                 abstract_lines.append(line)
         if len(abstract_lines) > 0:
             abstracts.append(' '.join(abstract_lines))
+    
+    tensors = (tensor_from_sentence(vocabulary, abstract, device) for abstract in abstracts)
+
+    encoder = Encoder(len(vocabulary), hidden_size, device)
+    decoder = Decoder(len(vocabulary), hidden_size, device)
+
+    train(encoder, decoder, tensors, device, print_every=1)

@@ -11,8 +11,8 @@ from numbers import Number
 from util.plot import show_plot
 
 
-MAX_LENGTH = 10
-teacher_forcing_ratio = 0.5
+MAX_LENGTH = 500
+teacher_forcing_ratio = 1
 
 def train_one_iteration(
         encoder: Encoder, decoder: Decoder,
@@ -32,7 +32,7 @@ def train_one_iteration(
 
     loss = 0
 
-    for t in range(sequence_length):
+    for t in range(min(sequence_length, max_length)):
         encoder_output, encoder_hidden = encoder(sequence[t], encoder_hidden)
         encoder_outputs[t] = encoder_output[0, 0]
     
@@ -81,6 +81,7 @@ def time_since(since, percent) -> str:
 
 def train(encoder: Encoder, decoder: Decoder,
           sequences: Iterable[torch.Tensor],
+          device: torch.device,
           print_every=1000, plot_every=100,
           learning_rate=0.01,
           iterations=100) -> None:
@@ -95,7 +96,7 @@ def train(encoder: Encoder, decoder: Decoder,
     criterion = nn.NLLLoss()
 
     for iteration, sequence in enumerate(sequences, start=1):
-        loss = train_one_iteration(encoder, decoder, sequence, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train_one_iteration(encoder, decoder, sequence, encoder_optimizer, decoder_optimizer, criterion, device)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -105,7 +106,8 @@ def train(encoder: Encoder, decoder: Decoder,
             print('%s (%d %d%%) %.4f' % (time_since(start, iteration / iterations),
                                          iteration,
                                          iteration / iterations * 100,
-                                         print_loss_avg))
+                                         print_loss_avg),
+                  sep='\t')
         
         if iteration % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every

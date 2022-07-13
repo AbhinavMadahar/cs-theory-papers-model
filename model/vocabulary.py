@@ -1,7 +1,7 @@
 import re
 import torch
 
-from typing import List
+from typing import Iterable, List
 
 
 SOS_token = 0
@@ -27,6 +27,9 @@ class Vocabulary:
             self.n_words += 1
         else:
             self.word2count[word] += 1
+    
+    def __len__(self) -> int:
+        return self.n_words
 
 
 def normalize(text: str) -> str:
@@ -35,11 +38,11 @@ def normalize(text: str) -> str:
     return text
 
 
-def indexes_from_sentence(vocabulary: Vocabulary, sentence: str) -> List[str]:
-    return [vocabulary.word2index[word] for word in sentence.split(' ')]
+def indexes_from_sentence(vocabulary: Vocabulary, sentence: Iterable[str]) -> List[str]:
+    return [vocabulary.word2index[word] for word in sentence]
 
 
-def tensor_from_sentence(vocabulary: Vocabulary, sentence: str, device: torch.device) -> torch.Tensor:
+def tensor_from_sentence(vocabulary: Vocabulary, sentence: Iterable[str], device: torch.device) -> torch.Tensor:
     indexes = indexes_from_sentence(vocabulary, sentence)
     indexes.append(EOS_token)
     return torch.tensor(indexes, dtype=torch.long, device=device).view(-1, 1)
