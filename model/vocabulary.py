@@ -1,4 +1,7 @@
 import re
+import torch
+
+from typing import List
 
 
 SOS_token = 0
@@ -30,3 +33,13 @@ def normalize(text: str) -> str:
     text = text.lower()
     text = [word for word in text.split(' ') if all('a' <= character <= 'z' for character in word)]
     return text
+
+
+def indexes_from_sentence(vocabulary: Vocabulary, sentence: str) -> List[str]:
+    return [vocabulary.word2index[word] for word in sentence.split(' ')]
+
+
+def tensor_from_sentence(vocabulary: Vocabulary, sentence: str, device: torch.device) -> torch.Tensor:
+    indexes = indexes_from_sentence(vocabulary, sentence)
+    indexes.append(EOS_token)
+    return torch.tensor(indexes, dtype=torch.long, device=device).view(-1, 1)
