@@ -7,7 +7,7 @@ from model.train import train
 from model.evaluate import evaluate
 from model.vocabulary import Vocabulary, tensor_from_sentence
 
-hidden_size = 128
+hidden_size = 64
 
 abstracts_file_name = 'data/abstracts.txt'
 acl_bib_file_name = 'data/acl.bib'
@@ -76,8 +76,9 @@ if __name__ == '__main__':
     encoder = Encoder(len(vocabulary), hidden_size, device)
     decoder = Decoder(len(vocabulary), hidden_size, device)
 
-    for _ in range(len(acl_abstracts) // 100):
-        train(encoder, decoder, acl_tensors, device, MAX_LENGTH, print_every=1, iterations=100)
+    iterations_between_evaluation = 1000
+    for _ in range(len(acl_abstracts) // iterations_between_evaluation):
+        train(encoder, decoder, acl_tensors, device, MAX_LENGTH, print_every=10, iterations=iterations_between_evaluation)
         print(*[vocabulary.index2word[index] for index in evaluate(encoder, decoder, next(acl_tensors), device, MAX_LENGTH)], sep=' ')
 
     for _ in range(100):
