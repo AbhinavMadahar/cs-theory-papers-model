@@ -76,7 +76,7 @@ def time_since(since, percent) -> str:
     s = now - since
     es = s / (percent)
     rs = es - s
-    return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
+    return as_minutes(s)
 
 
 def train(encoder: Encoder, decoder: Decoder,
@@ -96,6 +96,7 @@ def train(encoder: Encoder, decoder: Decoder,
 
     criterion = nn.NLLLoss()
 
+    print('time elapsed', 'iteration', 'loss', sep='\t')
     for iteration, sequence in enumerate(itertools.islice(sequences, iterations), start=1):
         loss = train_one_iteration(encoder, decoder, sequence, encoder_optimizer, decoder_optimizer, criterion, device, max_length)
         print_loss_total += loss
@@ -104,11 +105,7 @@ def train(encoder: Encoder, decoder: Decoder,
         if iteration % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (time_since(start, iteration / iterations),
-                                         iteration,
-                                         iteration / iterations * 100,
-                                         print_loss_avg),
-                  sep='\t')
+            print(time_since(start, iteration / iterations), iteration, print_loss_avg, sep='\t')
         
         if iteration % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every
