@@ -8,6 +8,7 @@ I can't find a dataset of CS theory papers, but I can make a dataset of those pa
 ## How to use this model
 
 First, use the `data/download.sh` script to download abstracts, and save the output to a text file.
+Then download the BibTeX from [the ACL Anthology website](https://aclanthology.org/), specifying the one with abstracts.
 
 ## Todo
 
