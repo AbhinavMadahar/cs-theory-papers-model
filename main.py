@@ -76,6 +76,10 @@ if __name__ == '__main__':
     encoder = Encoder(len(vocabulary), hidden_size, device)
     decoder = Decoder(len(vocabulary), hidden_size, device)
 
-    for _ in range(100):
+    for _ in range(len(acl_abstracts) // 100):
         train(encoder, decoder, acl_tensors, device, MAX_LENGTH, print_every=1, iterations=100)
-        print(*[vocabulary.index2word[index] for index in evaluate(encoder, decoder, next(tensors), device, MAX_LENGTH)], sep=' ')
+        print(*[vocabulary.index2word[index] for index in evaluate(encoder, decoder, next(acl_tensors), device, MAX_LENGTH)], sep=' ')
+
+    for _ in range(100):
+        train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, print_every=1, iterations=100)
+        print(*[vocabulary.index2word[index] for index in evaluate(encoder, decoder, next(cs_theory_tensors), device, MAX_LENGTH)], sep=' ')
