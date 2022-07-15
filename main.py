@@ -1,10 +1,10 @@
-from typing import Iterable
 import torch
 
 from torch import tensor
+from typing import Iterable
+from model.evaluate import evaluate
 from model.model import Encoder, Decoder
 from model.train import train
-from model.evaluate import evaluate
 from model.vocabulary import Vocabulary, tensor_from_sentence
 
 # the hyperparameters for the model, the training process, etc.
