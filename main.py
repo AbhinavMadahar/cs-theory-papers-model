@@ -7,7 +7,12 @@ from model.train import train
 from model.evaluate import evaluate
 from model.vocabulary import Vocabulary, tensor_from_sentence
 
-hidden_size = 64
+# the hyperparameters for the model, the training process, etc.
+# are stored here. when we implement beam search, we can use
+# this dictionary to store all the information for the beam search.
+hyperparameters = {
+    'hidden_size': 64,
+}
 
 abstracts_file_name = 'data/abstracts.txt'
 acl_bib_file_name = 'data/acl.bib'
@@ -73,8 +78,8 @@ if __name__ == '__main__':
     acl_tensors = unlimited_tensors(acl_abstracts)
     cs_theory_tensors = unlimited_tensors(abstracts)
 
-    encoder = Encoder(len(vocabulary), hidden_size, device)
-    decoder = Decoder(len(vocabulary), hidden_size, device)
+    encoder = Encoder(len(vocabulary), hyperparameters['hidden_size'], device)
+    decoder = Decoder(len(vocabulary), hyperparameters['hidden_size'], device)
 
     iterations_between_evaluation = 1000
     for _ in range(len(acl_abstracts) // iterations_between_evaluation):
