@@ -83,9 +83,9 @@ def train(encoder: Encoder, decoder: Decoder,
           sequences: Iterable[torch.Tensor],
           device: torch.device,
           max_length: int,
-          print_every=1000, plot_every=100,
+          print_every=None, plot_every=None,
           learning_rate=0.01,
-          iterations=100) -> None:
+          iterations=100) -> float:
     start = time.time()
     plot_losses = []
     print_loss_total = 0
@@ -96,20 +96,28 @@ def train(encoder: Encoder, decoder: Decoder,
 
     criterion = nn.NLLLoss()
 
-    print('time elapsed', 'iteration', 'loss', sep='\t')
+    already_printed_header = False
     for iteration, sequence in enumerate(itertools.islice(sequences, iterations), start=1):
         loss = train_one_iteration(encoder, decoder, sequence, encoder_optimizer, decoder_optimizer, criterion, device, max_length)
-        print_loss_total += loss
-        plot_loss_total += loss
+        if print_every is not None:
+            print_loss_total += loss
 
-        if iteration % print_every == 0:
-            print_loss_avg = print_loss_total / print_every
-            print_loss_total = 0
-            print(time_since(start, iteration / iterations), iteration, print_loss_avg, sep='\t')
+            if iteration % print_every == 0:
+                if not already_printed_header:
+                    print('time elapsed', 'iteration', 'loss', sep='\t')
+                print_loss_avg = print_loss_total / print_every
+                print_loss_total = 0
+                print(time_since(start, iteration / iterations), iteration, print_loss_avg, sep='\t')
         
-        if iteration % plot_every == 0:
-            plot_loss_avg = plot_loss_total / plot_every
-            plot_losses.append(plot_loss_avg)
-            plot_loss_total = 0
+        if plot_every is not None:
+            plot_loss_total += loss
+            
+            if iteration % plot_every == 0:
+                plot_loss_avg = plot_loss_total / plot_every
+                plot_losses.append(plot_loss_avg)
+                plot_loss_total = 0
     
-    show_plot(plot_losses)
+    if plot_every is not None and len(plot_loss_avg) > 0:
+        show_plot(plot_losses)
+    
+    return loss

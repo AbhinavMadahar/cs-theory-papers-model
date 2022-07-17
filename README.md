@@ -35,3 +35,5 @@ After this encoder-decoder model is decent, we can generate novel abstracts by p
 To train the encoder-decoder model, we first train it on general text, like tweets or Shakespeare's writing, to teach it English.
 After that, we train it further on the abstracts.
 It might be useful to first train it on more general abstracts, like abstracts across computer science, mathematics, physics, etc., so it learns how to discuss science.
+
+We use a simple beam search to find the best hyperparameters for the model.
