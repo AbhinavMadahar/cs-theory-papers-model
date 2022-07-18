@@ -1,4 +1,4 @@
-source="https://arxiv.org/list/cs.{CC,FL,CL,DS,CC}/pastweek?show=1000"
+source="https://arxiv.org/list/cs.{CC,FL,CL,DS}/pastweek?show=1000"
 
 abstract() {
     while read code
