@@ -7,6 +7,7 @@ from os import cpu_count
 from typing import Iterable, List, Tuple
 from multiprocessing import Pool
 from model.evaluate import evaluate
+from model.generate import generate
 from model.model import Encoder, Decoder
 from model.train import train
 from model.vocabulary import Vocabulary, tensor_from_sentence
@@ -124,4 +125,14 @@ if __name__ == '__main__':
                                                     children,
                                                     seed_hyperparameter_configurations)
 
-    print(best_hyperparameter_configuration)
+    encoder = Encoder(len(vocabulary), best_hyperparameter_configuration.hidden_size, device)
+    decoder = Decoder(len(vocabulary), best_hyperparameter_configuration.hidden_size, device)
+
+    for _ in range(1):
+        train(encoder, decoder, acl_tensors, device, MAX_LENGTH, iterations=10)
+
+    for _ in range(1):
+        loss = train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, iterations=1)
+    
+    generated = generate(decoder, vocabulary, best_hyperparameter_configuration.hidden_size, MAX_LENGTH, device)
+    print(generated)

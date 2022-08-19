@@ -22,7 +22,7 @@ def beam_search(criterion, children, seed_configurations) -> None:
 
     # for now, we will stop the beam search after we try a set number of configurations.
     # later on, it might be better to stop the beam search when running more stages does not improve the best configuration found.
-    n_configurations_to_try = 20
+    n_configurations_to_try = 10
     width = 10  # after every stage, cut down to only this many of the best
     number_of_stages_to_consider = n_configurations_to_try // width 
 
