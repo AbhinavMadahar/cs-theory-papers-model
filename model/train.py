@@ -28,13 +28,10 @@ def train_one_iteration(
 
     sequence_length = sequence.size(0)
 
-    encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
-
     loss = 0
 
     for t in range(min(sequence_length, max_length)):
-        encoder_output, encoder_hidden = encoder(sequence[t], encoder_hidden)
-        encoder_outputs[t] = encoder_output[0, 0]
+        _, encoder_hidden = encoder(sequence[t], encoder_hidden)
     
     decoder_input = torch.tensor([[SOS_token]], device=device)
     

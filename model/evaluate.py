@@ -16,11 +16,9 @@ def evaluate(encoder: Encoder, decoder: Decoder,
         sequence_length = sequence.size()[0]
 
         encoder_hidden = encoder.init_hidden()
-        encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
         for ei in range(sequence_length):
-            encoder_output, encoder_hidden = encoder(sequence[ei], encoder_hidden)
-            encoder_outputs[ei] += encoder_output[0, 0]
+            _, encoder_hidden = encoder(sequence[ei], encoder_hidden)
         
         decoder_input = torch.tensor([[SOS_token]], device=device)
         decoder_hidden = encoder_hidden
