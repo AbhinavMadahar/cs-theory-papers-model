@@ -5,7 +5,7 @@ import time
 
 from model.model import Encoder, Decoder
 from typing import List
-from model.vocabulary import EOS_token, SOS_token, tensor_from_sentence
+from model.vocabulary import EOS_token, SOS_token
 
 
 def evaluate(encoder: Encoder, decoder: Decoder,
