@@ -1,14 +1,16 @@
 import itertools
+import random
 import torch
 
 from collections import namedtuple
 from os import cpu_count
-from typing import Iterable, Tuple
+from typing import Iterable, List, Tuple
 from multiprocessing import Pool
 from model.evaluate import evaluate
 from model.model import Encoder, Decoder
 from model.train import train
 from model.vocabulary import Vocabulary, tensor_from_sentence
+from util.beam_search import beam_search
 
 # the hyperparameters for the model, the training process, etc.
 # are stored here. when we implement beam search, we can use
@@ -96,9 +98,10 @@ if __name__ == '__main__':
     acl_tensors = unlimited_tensors(acl_abstracts)
     cs_theory_tensors = unlimited_tensors(abstracts)
 
-    def evaluate_hyperparameter_configuration(hyperparameters: Hyperparameters) -> Tuple[float, Hyperparameters]:
-        encoder = Encoder(len(vocabulary), hyperparameters.hidden_size, device)
-        decoder = Decoder(len(vocabulary), hyperparameters.hidden_size, device)
+    def evaluate_hyperparameter_configuration(configuration: Hyperparameters) -> Tuple[float, Hyperparameters]:
+        print('Evaluating', configuration)
+        encoder = Encoder(len(vocabulary), configuration.hidden_size, device)
+        decoder = Decoder(len(vocabulary), configuration.hidden_size, device)
 
         for _ in range(1):
             train(encoder, decoder, acl_tensors, device, MAX_LENGTH, iterations=10)
@@ -107,27 +110,19 @@ if __name__ == '__main__':
             loss = train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, iterations=1)
         
         # TODO: return a validation loss instead of a train loss
-        return loss, hyperparameters
+        return configuration, loss
+    
+    def children(configuration: Hyperparameters, number: int) -> List[Hyperparameters]:
+        kids = []
+        for _ in range(number):
+            hidden_size = int(configuration.hidden_size * random.random() * 2)
+            kids.append(Hyperparameters(hidden_size=hidden_size))
+        return kids
+    
+    seed_hyperparameter_configurations = [Hyperparameters(hidden_size=64)]
 
-    hyperparameter_configurations_tried = 0
-    hyperparameter_configurations = list(seed_hyperparameter_configurations)  # TODO: make this a priority queue
-    hyperparameter_configurations_which_have_already_been_tested = set(seed_hyperparameter_configurations)
+    best_hyperparameter_configuration = beam_search(evaluate_hyperparameter_configuration,
+                                                    children,
+                                                    seed_hyperparameter_configurations)
 
-    number_of_hyperparameters_to_consider_per_step = 10
-    number_of_full_stages_to_consider = total_number_of_hyperparameter_configurations_to_try // number_of_hyperparameters_to_consider_per_step 
-    residual_for_the_last_stage = total_number_of_hyperparameter_configurations_to_try % number_of_hyperparameters_to_consider_per_step 
-
-    top = lambda iterator, k: sorted(iterator)[:k]
-    def valid(hyperparameters: Hyperparameters) -> bool:
-        return 1 <= hyperparameters.hidden_size
-
-    with Pool(cpu_count()) as pool:
-        for _ in range(number_of_full_stages_to_consider):
-            hyperparameters_with_score = pool.map(evaluate_hyperparameter_configuration, hyperparameter_configurations)
-            best_hyperparameter_configurations = [hp for score, hp in top(hyperparameters_with_score, number_of_hyperparameters_to_consider_per_step)]
-            hyperparameter_configurations = []
-            for hyperparameters in best_hyperparameter_configurations:
-                for hyperparameter_configuration in (Hyperparameters(*args) for args in itertools.product([hyperparameters.hidden_size * 2, hyperparameters.hidden_size // 2])):
-                    if valid(hyperparameter_configuration) and hyperparameter_configuration not in hyperparameter_configurations_which_have_already_been_tested:
-                       hyperparameter_configurations.append(hyperparameter_configuration)
-                       hyperparameter_configurations_which_have_already_been_tested.add(hyperparameter_configuration)
+    print(best_hyperparameter_configuration)
