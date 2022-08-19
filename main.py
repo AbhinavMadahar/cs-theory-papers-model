@@ -1,8 +1,9 @@
-import itertools
+import argparse
 import random
 import torch
 
 from collections import namedtuple
+from enum import Enum
 from os import cpu_count
 from typing import Iterable, List, Tuple
 from multiprocessing import Pool
@@ -12,6 +13,18 @@ from model.model import Encoder, Decoder
 from model.train import train
 from model.vocabulary import Vocabulary, tensor_from_sentence
 from util.beam_search import beam_search
+
+
+arg_parser = argparse.ArgumentParser(description='Control the NLG model')
+arg_parser.add_argument('--mode', type=str, help='in which mode to run the code (i.e. debug or prod)')
+args = arg_parser.parse_args()
+
+# Describes the mode to run the code.
+# Debug is when we just want to make sure the code works.
+# In this mode, we only train for a few iterations at each step, and we don't look as deeply through the search space for hyperparameters.
+# Prod is when we run the model in production.
+# We train for many iterations and look deeply through the search space.
+mode = args.mode
 
 # the hyperparameters for the model, the training process, etc.
 # are stored here. when we implement beam search, we can use
@@ -40,6 +53,11 @@ acl_bib_file_name = 'data/acl.bib'
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MAX_LENGTH = 500
+
+def unlimited_tensors(source: Iterable[Iterable[str]]):
+    while True:
+        for abstract in source:
+            yield tensor_from_sentence(vocabulary, abstract, device) 
 
 if __name__ == '__main__':
     vocabulary = Vocabulary()
@@ -91,11 +109,6 @@ if __name__ == '__main__':
         if len(abstract_lines) > 0:
             abstracts.append(' '.join(abstract_lines))
     
-    def unlimited_tensors(source: Iterable[Iterable[str]]):
-        while True:
-            for abstract in source:
-                yield tensor_from_sentence(vocabulary, abstract, device) 
-
     acl_tensors = unlimited_tensors(acl_abstracts)
     cs_theory_tensors = unlimited_tensors(abstracts)
 
@@ -104,10 +117,10 @@ if __name__ == '__main__':
         decoder = Decoder(len(vocabulary), configuration.hidden_size, device)
 
         for _ in range(1):
-            train(encoder, decoder, acl_tensors, device, MAX_LENGTH, iterations=10)
+            train(encoder, decoder, acl_tensors, device, MAX_LENGTH, iterations=10 if mode == 'debug' else 1000)
 
         for _ in range(1):
-            loss = train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, iterations=1)
+            loss = train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, iterations=1 if mode == 'debug' else 1000)
         
         # TODO: return a validation loss instead of a train loss
         return configuration, loss
@@ -123,16 +136,17 @@ if __name__ == '__main__':
 
     best_hyperparameter_configuration = beam_search(evaluate_hyperparameter_configuration,
                                                     children,
-                                                    seed_hyperparameter_configurations)
+                                                    seed_hyperparameter_configurations,
+                                                    mode)
 
     encoder = Encoder(len(vocabulary), best_hyperparameter_configuration.hidden_size, device)
     decoder = Decoder(len(vocabulary), best_hyperparameter_configuration.hidden_size, device)
 
     for _ in range(1):
-        train(encoder, decoder, acl_tensors, device, MAX_LENGTH, iterations=10)
+        train(encoder, decoder, acl_tensors, device, MAX_LENGTH, iterations=10 if mode == 'debug' else 10000)
 
     for _ in range(1):
-        loss = train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, iterations=1)
+        loss = train(encoder, decoder, cs_theory_tensors, device, MAX_LENGTH, iterations=1 if mode == 'debug' else 1000)
     
     generated = generate(decoder, vocabulary, best_hyperparameter_configuration.hidden_size, MAX_LENGTH, device)
     print(generated)

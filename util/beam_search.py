@@ -2,7 +2,7 @@ from multiprocessing import Pool, cpu_count
 from typing import Callable, Iterable, Tuple
 
 
-def beam_search(criterion, children, seed_configurations) -> None:
+def beam_search(criterion, children, seed_configurations, mode) -> None:
     """
     Implements a beam search.
 
@@ -11,6 +11,7 @@ def beam_search(criterion, children, seed_configurations) -> None:
                    the score can be of any type as long as it implements __gt__.
         children: a function which accepts a hyperparameter and an integer and returns that many children of the hyperparameter.
         seed_configurations: an Iterable of the seeds from which we will start beam search.
+        mode: the mode to run the code in (e.g. debug, prod)
     
     Returns:
         The best hyperparameter configuration.
@@ -41,7 +42,7 @@ def beam_search(criterion, children, seed_configurations) -> None:
 
             stage = []
             for configuration, score in best_configurations:
-                for child in children(configuration, 3):
+                for child in children(configuration, 3 if mode == 'debug' else 10):
                     if child not in score_of_configuration:
                         stage.append(child)
     
