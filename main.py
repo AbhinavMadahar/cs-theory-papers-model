@@ -99,7 +99,6 @@ if __name__ == '__main__':
     cs_theory_tensors = unlimited_tensors(abstracts)
 
     def evaluate_hyperparameter_configuration(configuration: Hyperparameters) -> Tuple[float, Hyperparameters]:
-        print('Evaluating', configuration)
         encoder = Encoder(len(vocabulary), configuration.hidden_size, device)
         decoder = Decoder(len(vocabulary), configuration.hidden_size, device)
 
